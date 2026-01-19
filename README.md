@@ -9,3 +9,6 @@ This repository contains the full ecommerce platform.
   - api-gateway
   - services (microservices)
 - frontend
+
+## Ports
+config-server = 8888
