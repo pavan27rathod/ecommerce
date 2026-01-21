@@ -12,3 +12,5 @@ This repository contains the full ecommerce platform.
 
 ## Ports
 config-server = 8888
+service-discovery = 8761
+api-gateway = 8080
