@@ -1,196 +1,112 @@
-package com.ecommerce.auth_service.entity;
+package com.ecommerce.auth_service.dto.request;
 
-import jakarta.persistence.*;
+public class RegisterRequest {
 
-import java.time.LocalDateTime;
-
-@Entity
-@Table(
-    name = "users",
-    uniqueConstraints = @UniqueConstraint(columnNames = "email")
-)
-
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // Auth
-    @Column(nullable = false)
     private String email;
-
-    @Column(nullable = false)
     private String password;
 
-    private String status;
-    private LocalDateTime createdAt;
-
-    // Personal
     private String title;
     private String firstName;
     private String lastName;
     private String phoneNumber;
     private String mobileNumber;
 
-    // Business
     private String companyName;
     private String gstNumber;
     private String jobRole;
     private String primaryUse;
 
-    // Preferences
     private Boolean contactEmail;
     private Boolean contactPhone;
     private Boolean contactSms;
     private Boolean rememberMe;
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.status = "ACTIVE";
-    }
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public String getEmail() {
 		return email;
 	}
-
 	public void setEmail(String email) {
 		this.email = email;
 	}
-
 	public String getPassword() {
 		return password;
 	}
-
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
-
 	public String getTitle() {
 		return title;
 	}
-
 	public void setTitle(String title) {
 		this.title = title;
 	}
-
 	public String getFirstName() {
 		return firstName;
 	}
-
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
-
 	public String getLastName() {
 		return lastName;
 	}
-
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
-
 	public String getPhoneNumber() {
 		return phoneNumber;
 	}
-
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
-
 	public String getMobileNumber() {
 		return mobileNumber;
 	}
-
 	public void setMobileNumber(String mobileNumber) {
 		this.mobileNumber = mobileNumber;
 	}
-
 	public String getCompanyName() {
 		return companyName;
 	}
-
 	public void setCompanyName(String companyName) {
 		this.companyName = companyName;
 	}
-
 	public String getGstNumber() {
 		return gstNumber;
 	}
-
 	public void setGstNumber(String gstNumber) {
 		this.gstNumber = gstNumber;
 	}
-
 	public String getJobRole() {
 		return jobRole;
 	}
-
 	public void setJobRole(String jobRole) {
 		this.jobRole = jobRole;
 	}
-
 	public String getPrimaryUse() {
 		return primaryUse;
 	}
-
 	public void setPrimaryUse(String primaryUse) {
 		this.primaryUse = primaryUse;
 	}
-
 	public Boolean getContactEmail() {
 		return contactEmail;
 	}
-
 	public void setContactEmail(Boolean contactEmail) {
 		this.contactEmail = contactEmail;
 	}
-
 	public Boolean getContactPhone() {
 		return contactPhone;
 	}
-
 	public void setContactPhone(Boolean contactPhone) {
 		this.contactPhone = contactPhone;
 	}
-
 	public Boolean getContactSms() {
 		return contactSms;
 	}
-
 	public void setContactSms(Boolean contactSms) {
 		this.contactSms = contactSms;
 	}
-
 	public Boolean getRememberMe() {
 		return rememberMe;
 	}
-
 	public void setRememberMe(Boolean rememberMe) {
 		this.rememberMe = rememberMe;
 	}
