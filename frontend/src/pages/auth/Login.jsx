@@ -1,5 +1,6 @@
 import { Formik, Form } from "formik";
 import { loginSchema } from "@/utils/validators";
+import { toast } from "react-toastify";
 
 
 
@@ -36,17 +37,22 @@ export default function Login() {
 
               // 🔹 Phase 1 behavior:
               // No JWT, no redirect yet
+              toast.success("Login successful");
               console.log("Login successful");
 
             } catch (error) {
               // 🔹 Invalid credentials from backend
               if (error.response?.status === 401 || error.response?.status ===500 ) {
+                toast.error("Invalid email or password");
                 setFieldError(
                   "password",
                   error.response.data.message
                 );
+                console.log(error.response.status);
+                console.log(error.response.error)
               } else {
                 // 🔹 Generic fallback error
+                toast.error("Login failed. Please try again.");
                 setFieldError(
                   "password",
                   "Something went wrong. Please try again."

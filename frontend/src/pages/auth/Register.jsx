@@ -1,35 +1,56 @@
-import { Formik } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import Input from "@/components/common/Input";
 import { Link } from "react-router-dom";
+import { registerUser } from "@/services/authService";
+import { toast } from "react-toastify";
 
-const registerSchema = Yup.object({
-  email: Yup.string().email("Invalid email").required("Required"),
+
+export const registerSchema = Yup.object({
+  email: Yup.string()
+    .email("Invalid email")
+    .required("Required"),
+
   password: Yup.string()
     .min(8, "Minimum 8 characters")
-    .matches(/[A-Z]/, "One uppercase letter")
-    .matches(/[a-z]/, "One lowercase letter")
-    .matches(/[0-9]/, "One number")
     .required("Required"),
+
   firstName: Yup.string().required("Required"),
   lastName: Yup.string().required("Required"),
-  phone: Yup.string().required("Required"),
+
+  phone: Yup.string()
+    .matches(/^[0-9+]{7,15}$/, "Invalid phone number")
+    .nullable()
+    .notRequired(),
+
+  mobile: Yup.string()
+    .matches(/^[0-9+]{7,15}$/, "Invalid mobile number")
+    .nullable()
+    .notRequired(),
+
+  company: Yup.string().nullable().notRequired(),
+  gst: Yup.string().nullable().notRequired(),
+
+  title: Yup.string().oneOf(["", "Mr", "Ms", "Mrs"]),
+  jobRole: Yup.string().oneOf(["", "Engineer", "Student", "Purchasing"]),
+  usage: Yup.string().oneOf(["", "Personal", "Business", "Education"]),
+
+  contactEmail: Yup.boolean(),
+  contactPhone: Yup.boolean(),
+  contactSms: Yup.boolean(),
 });
+
 
 export default function Register() {
   return (
     <div className="w-full max-w-[520px] px-[48px] pt-[32px] pb-[80px]">
-      {/* Header */}
       <h1 className="text-[28px] font-semibold text-black mb-[6px]">
         Register
       </h1>
 
       <p className="text-[14px] text-[#333] mb-[24px]">
         Already registered?{" "}
-        <Link
-          to="/login"
-          className="text-[#0070c9] hover:underline"
-        >
+        <Link to="/login" className="text-[#0070c9] hover:underline">
           Log In
         </Link>
       </p>
@@ -53,10 +74,58 @@ export default function Register() {
           contactSms: true,
           mobile: "",
         }}
+
         validationSchema={registerSchema}
-        onSubmit={(values) => {
-          console.log("REGISTER DATA:", values);
+        onSubmit={async (values, { setSubmitting, setFieldError }) => {
+          console.log("SUBMIT FIRED", values);
+
+          try {
+            
+
+            const payload = {
+              email: values.email,
+              password: values.password,
+              title: values.title,
+              firstName: values.firstName,
+              lastName: values.lastName,
+
+              phoneNumber: values.phone || null,
+              mobileNumber: values.mobile || null,
+
+              companyName: values.company || null,
+              gstNumber: values.gst || null,
+              primaryUse: values.usage || null,
+
+              jobRole: values.jobRole,
+              contactEmail: values.contactEmail,
+              contactPhone: values.contactPhone,
+              contactSms: values.contactSms,
+            };
+
+            await registerUser(payload);
+
+            // await registerUser(values); // temporary, no mapping yet
+            toast.success("Registration successful. Please login.");
+            console.log("API SUCCESS");
+          } catch (err) {
+
+            toast.error("Registration failed. Try again.");
+            console.log("API ERROR FULL OBJECT 👉", err);
+            console.log("API ERROR MESSAGE 👉", err.message);
+            console.log("API ERROR RESPONSE 👉", err.response);
+            
+            if (err.response?.status === 409) {
+              toast.error("Email already registered");
+              setFieldError("email", "Email already registered");
+            }
+
+
+
+          } finally {
+            setSubmitting(false);
+          }
         }}
+
       >
         {({
           values,
@@ -64,9 +133,9 @@ export default function Register() {
           touched,
           handleChange,
           handleBlur,
-          handleSubmit,
+          isSubmitting,
         }) => (
-          <form onSubmit={handleSubmit} className="space-y-[24px]">
+          <Form className="space-y-[24px]">
             {/* Email */}
             <Input
               label="Email Address"
@@ -77,8 +146,6 @@ export default function Register() {
               onBlur={handleBlur}
               error={errors.email}
               touched={touched.email}
-              className="h-[44px] bg-[#f5f5f5] px-[14px] text-[15px]
-                         border-b border-[#8a8a8a] focus:outline-none"
             />
 
             {/* Password */}
@@ -92,8 +159,6 @@ export default function Register() {
               onBlur={handleBlur}
               error={errors.password}
               touched={touched.password}
-              className="h-[44px] bg-[#f5f5f5] px-[14px] text-[15px]
-                         border-b border-[#8a8a8a] focus:outline-none"
             />
 
             {/* Password rules */}
@@ -106,9 +171,7 @@ export default function Register() {
 
             {/* Title */}
             <div>
-              <label className="block text-[15px] mb-[6px]">
-                Title
-              </label>
+              <label className="block text-[15px] mb-[6px]">Title</label>
               <select
                 name="title"
                 value={values.title}
@@ -129,29 +192,21 @@ export default function Register() {
               <Input
                 label="First Name"
                 name="firstName"
-                placeholder="First Name(s)"
                 value={values.firstName}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.firstName}
                 touched={touched.firstName}
-                className="h-[44px] bg-[#f5f5f5] px-[14px]
-                           text-[15px] border-b border-[#8a8a8a]
-                           focus:outline-none"
               />
 
               <Input
                 label="Last Name"
                 name="lastName"
-                placeholder="Last Name(s)"
                 value={values.lastName}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.lastName}
                 touched={touched.lastName}
-                className="h-[44px] bg-[#f5f5f5] px-[14px]
-                           text-[15px] border-b border-[#8a8a8a]
-                           focus:outline-none"
               />
             </div>
 
@@ -159,39 +214,27 @@ export default function Register() {
             <Input
               label="Phone Number"
               name="phone"
-              placeholder="Please enter number"
               value={values.phone}
               onChange={handleChange}
               onBlur={handleBlur}
               error={errors.phone}
               touched={touched.phone}
-              className="h-[44px] bg-[#f5f5f5] px-[14px]
-                         text-[15px] border-b border-[#8a8a8a]
-                         focus:outline-none"
             />
 
             {/* Company */}
             <Input
               label="Company Name (Optional)"
               name="company"
-              placeholder="Company Name"
               value={values.company}
               onChange={handleChange}
-              className="h-[44px] bg-[#f5f5f5] px-[14px]
-                         text-[15px] border-b border-[#8a8a8a]
-                         focus:outline-none"
             />
 
             {/* GST */}
             <Input
               label="GST number"
               name="gst"
-              placeholder="Enter GST Number"
               value={values.gst}
               onChange={handleChange}
-              className="h-[44px] bg-[#f5f5f5] px-[14px]
-                         text-[15px] border-b border-[#8a8a8a]
-                         focus:outline-none"
             />
 
             {/* Job Role */}
@@ -242,17 +285,32 @@ export default function Register() {
 
               <div className="space-y-[10px] text-[15px]">
                 <label className="flex items-center gap-[10px]">
-                  <input type="checkbox" name="contactEmail" checked={values.contactEmail} onChange={handleChange} />
+                  <input
+                    type="checkbox"
+                    name="contactEmail"
+                    checked={values.contactEmail}
+                    onChange={handleChange}
+                  />
                   Email Address
                 </label>
 
                 <label className="flex items-center gap-[10px]">
-                  <input type="checkbox" name="contactPhone" checked={values.contactPhone} onChange={handleChange} />
+                  <input
+                    type="checkbox"
+                    name="contactPhone"
+                    checked={values.contactPhone}
+                    onChange={handleChange}
+                  />
                   Phone Number
                 </label>
 
                 <label className="flex items-center gap-[10px]">
-                  <input type="checkbox" name="contactSms" checked={values.contactSms} onChange={handleChange} />
+                  <input
+                    type="checkbox"
+                    name="contactSms"
+                    checked={values.contactSms}
+                    onChange={handleChange}
+                  />
                   SMS / MMS
                 </label>
               </div>
@@ -262,26 +320,31 @@ export default function Register() {
             <Input
               label="Mobile Number"
               name="mobile"
-              placeholder="Please enter Mobile Number"
               value={values.mobile}
               onChange={handleChange}
-              className="h-[44px] bg-[#f5f5f5] px-[14px]
-                         text-[15px] border-b border-[#8a8a8a]
-                         focus:outline-none"
             />
 
-            {/* Register Button */}
+            {/* Submit */}
             <button
               type="submit"
-              className="mt-[16px] bg-[#e5e5e5] text-[#999]
-                         px-[36px] py-[12px] rounded-[6px]
-                         text-[15px] cursor-not-allowed"
+              disabled={isSubmitting}
+              className={`mt-[16px] px-[36px] py-[12px] rounded-[6px] text-[15px]
+                ${
+                  isSubmitting
+                    ? "bg-[#e5e5e5] text-[#999] cursor-not-allowed"
+                    : "bg-[#0070c9] text-white hover:bg-[#005fa3]"
+                }`}
             >
               Register
             </button>
-          </form>
+          </Form>
         )}
       </Formik>
     </div>
   );
 }
+
+
+
+
+
