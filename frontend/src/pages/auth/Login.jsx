@@ -1,6 +1,11 @@
 import { Formik, Form } from "formik";
 import { loginSchema } from "@/utils/validators";
-import Header from "../../components/common/Header";
+import { toast } from "react-toastify";
+
+
+
+// 🔹 API import (NEW)
+import { loginUser } from "@/services/authService";
 
 export default function Login() {
   return (
@@ -18,9 +23,49 @@ export default function Login() {
             rememberMe: true,
           }}
           validationSchema={loginSchema}
-          onSubmit={(values) => {
-            console.log("Login Data:", values);
+
+          /* ================================
+             🔹 API INTEGRATION STARTS HERE
+             ================================ */
+          onSubmit={async (values, { setSubmitting, setFieldError }) => {
+            try {
+              // 🔹 Call backend login API via API Gateway
+              await loginUser({
+                email: values.email,
+                password: values.password,
+              });
+
+              // 🔹 Phase 1 behavior:
+              // No JWT, no redirect yet
+              toast.success("Login successful");
+              console.log("Login successful");
+
+            } catch (error) {
+              // 🔹 Invalid credentials from backend
+              if (error.response?.status === 401 || error.response?.status ===500 ) {
+                toast.error("Invalid email or password");
+                setFieldError(
+                  "password",
+                  error.response.data.message
+                );
+                console.log(error.response.status);
+                console.log(error.response.error)
+              } else {
+                // 🔹 Generic fallback error
+                toast.error("Login failed. Please try again.");
+                setFieldError(
+                  "password",
+                  "Something went wrong. Please try again."
+                );
+              }
+            } finally {
+              // 🔹 Tell Formik API call is finished
+              setSubmitting(false);
+            }
           }}
+          /* ================================
+             🔹 API INTEGRATION ENDS HERE
+             ================================ */
         >
           {({
             values,
