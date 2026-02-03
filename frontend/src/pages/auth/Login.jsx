@@ -1,6 +1,10 @@
 import { Formik, Form } from "formik";
 import { loginSchema } from "@/utils/validators";
-import Header from "../../components/common/Header";
+
+
+
+// 🔹 API import (NEW)
+import { loginUser } from "@/services/authService";
 
 export default function Login() {
   return (
@@ -18,9 +22,44 @@ export default function Login() {
             rememberMe: true,
           }}
           validationSchema={loginSchema}
-          onSubmit={(values) => {
-            console.log("Login Data:", values);
+
+          /* ================================
+             🔹 API INTEGRATION STARTS HERE
+             ================================ */
+          onSubmit={async (values, { setSubmitting, setFieldError }) => {
+            try {
+              // 🔹 Call backend login API via API Gateway
+              await loginUser({
+                email: values.email,
+                password: values.password,
+              });
+
+              // 🔹 Phase 1 behavior:
+              // No JWT, no redirect yet
+              console.log("Login successful");
+
+            } catch (error) {
+              // 🔹 Invalid credentials from backend
+              if (error.response?.status === 401 || error.response?.status ===500 ) {
+                setFieldError(
+                  "password",
+                  error.response.data.message
+                );
+              } else {
+                // 🔹 Generic fallback error
+                setFieldError(
+                  "password",
+                  "Something went wrong. Please try again."
+                );
+              }
+            } finally {
+              // 🔹 Tell Formik API call is finished
+              setSubmitting(false);
+            }
           }}
+          /* ================================
+             🔹 API INTEGRATION ENDS HERE
+             ================================ */
         >
           {({
             values,
