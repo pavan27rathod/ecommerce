@@ -1,0 +1,20 @@
+CREATE TABLE category (
+    id BINARY(16) NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    slug VARCHAR(150) NOT NULL UNIQUE,
+    description VARCHAR(1000),
+    parent_id BINARY(16),
+    level INT NOT NULL,
+    product_count INT NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    display_order INT NOT NULL DEFAULT 0,
+    icon_url VARCHAR(500),
+    seo_title VARCHAR(255),
+    seo_description VARCHAR(1000),
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (id),
+    INDEX idx_category_parent (parent_id),
+    INDEX idx_category_active (is_active),
+    INDEX idx_category_level (level)
+);
