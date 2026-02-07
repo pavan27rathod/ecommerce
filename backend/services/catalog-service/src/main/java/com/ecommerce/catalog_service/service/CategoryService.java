@@ -1,13 +1,18 @@
 package com.ecommerce.catalog_service.service;
 
+import com.ecommerce.catalog_service.dto.BrowseCategoryDto;
+import com.ecommerce.catalog_service.dto.BrowseSubCategoryDto;
+import com.ecommerce.catalog_service.dto.CategoryDetailsDto;
 import com.ecommerce.catalog_service.entity.Category;
 import com.ecommerce.catalog_service.repository.CategoryRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -15,49 +20,96 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    // Constructor injection (required)
     public CategoryService(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
-    /**
-     * CLP Home: fetch active root categories
-     */
     public List<Category> findActiveRootCategories() {
         return categoryRepository
                 .findByParentIdIsNullAndIsActiveTrueOrderByDisplayOrderAsc();
     }
 
-    /**
-     * CLP/Sub-CLP: fetch active children for a given category
-     */
     public List<Category> findActiveChildCategories(UUID parentId) {
         return categoryRepository
                 .findByParentIdAndIsActiveTrueOrderByDisplayOrderAsc(parentId);
     }
 
-    /**
-     * Resolve category by SEO slug
-     */
     public Optional<Category> findActiveCategoryBySlug(String slug) {
         return categoryRepository
                 .findBySlugAndIsActiveTrue(slug);
     }
 
-    /**
-     * Navigation / cache warmup use
-     */
     public List<Category> findAllActiveCategoriesSorted() {
         return categoryRepository
                 .findByIsActiveTrueOrderByDisplayOrderAsc();
     }
 
-    /**
-     * UI decision helper:
-     * If category has children -> show CLP
-     * If no children -> allow direct PLP
-     */
     public boolean hasActiveChildren(UUID categoryId) {
         return !findActiveChildCategories(categoryId).isEmpty();
     }
+
+    /**
+     * Browse page API logic
+     */
+    public List<BrowseCategoryDto> getBrowseCategories() {
+
+        List<Category> rootCategories = findActiveRootCategories();
+
+        return rootCategories.stream()
+                .map(root -> {
+
+                    List<BrowseSubCategoryDto> children =
+                            findActiveChildCategories(root.getId())
+                                    .stream()
+                                    .map(child -> new BrowseSubCategoryDto(
+                                            child.getId(),
+                                            child.getName(),
+                                            child.getSlug(),
+                                            child.getProductCount()
+                                    ))
+                                    .collect(Collectors.toList());
+
+                    return new BrowseCategoryDto(
+                            root.getId(),
+                            root.getName(),
+                            root.getSlug(),
+                            root.getProductCount(),
+                            children
+                    );
+
+                })
+                .collect(Collectors.toList());
+    }
+    
+    public CategoryDetailsDto getCategoryDetails(String slug) {
+
+        Category category = categoryRepository
+                .findBySlugAndIsActiveTrue(slug)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        List<Category> childCategories =
+                categoryRepository.findByParentIdAndIsActiveTrueOrderByDisplayOrderAsc(category.getId());
+
+        List<BrowseSubCategoryDto> children =
+                childCategories.stream()
+                        .map(child -> new BrowseSubCategoryDto(
+                                child.getId(),
+                                child.getName(),
+                                child.getSlug(),
+                                child.getProductCount()
+                        ))
+                        .toList();
+
+        boolean hasChildren = !children.isEmpty();
+
+        return new CategoryDetailsDto(
+                category.getId(),
+                category.getName(),
+                category.getSlug(),
+                category.getDescription(),
+                hasChildren,
+                children
+        );
+    }
+
 }
