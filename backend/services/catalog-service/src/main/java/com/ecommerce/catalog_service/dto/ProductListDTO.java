@@ -1,12 +1,13 @@
 package com.ecommerce.catalog_service.dto;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.ecommerce.catalog_service.entity.Product;
 
-public class ProductListDTO {
-
+public class ProductListDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
     private UUID id;
     private String name;
     private String slug;

@@ -18,6 +18,9 @@ import com.ecommerce.catalog_service.repository.ProductPriceBreakRepository;
 import com.ecommerce.catalog_service.repository.ProductRepository;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+
 
 @Service
 @Transactional(readOnly = true)
@@ -39,7 +42,8 @@ public class ProductService {
 //                .map(ProductListDTO::new)
 //                .toList();
 //    }
-    
+    @Cacheable(value = "productsByCategory",
+            key = "#categoryId + '-' + #page + '-' + #size + '-' + #sortBy + '-' + #direction")
     public Page<ProductListDTO> getProductsByCategory(
             UUID categoryId,
             int page,
@@ -47,6 +51,7 @@ public class ProductService {
             String sortBy,
             String direction) {
 
+        System.out.println("DB HIT — fetching from database");
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
@@ -61,10 +66,13 @@ public class ProductService {
 
 
     // PDP
+    @Cacheable(value = "productBySlug", key = "#slug")
     public ProductDetailDTO getProductBySlug(String slug) {
 
         Product product = productRepository.findBySlug(slug)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        System.out.println("DB HIT — fetching from database");
 
         List<ProductPriceBreak> priceBreaks =
                 priceBreakRepository.findByProductIdOrderByMinQuantityAsc(product.getId());
@@ -80,9 +88,10 @@ public class ProductService {
 //                .map(ProductListDTO::new)
 //                .toList();
 //    }
-    
+    @Cacheable(value = "productSearch", key = "#query + '-' + #page + '-' + #size")
     public Page<ProductListDTO> searchProducts(String query, int page, int size) {
 
+        System.out.println("DB HIT — fetching from database");
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Product> products =
@@ -122,5 +131,19 @@ public class ProductService {
                 product.getStockQuantity()
         );
     }
+    
+    @Transactional
+    @CacheEvict(value = {
+            "productSearch",
+            "productBySlug",
+            "productsByCategory"
+    }, allEntries = true)
+    public void updateProduct(Product product) {
+
+        productRepository.save(product);
+
+        System.out.println("Cache cleared for products");
+    }
+
 
 }
