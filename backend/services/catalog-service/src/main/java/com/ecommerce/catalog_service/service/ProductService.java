@@ -14,6 +14,7 @@ import com.ecommerce.catalog_service.dto.ProductDetailDTO;
 import com.ecommerce.catalog_service.dto.ProductListDTO;
 import com.ecommerce.catalog_service.entity.Product;
 import com.ecommerce.catalog_service.entity.ProductPriceBreak;
+import com.ecommerce.catalog_service.event.ProductCreatedEvent;
 import com.ecommerce.catalog_service.repository.ProductPriceBreakRepository;
 import com.ecommerce.catalog_service.repository.ProductRepository;
 
@@ -28,12 +29,17 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductPriceBreakRepository priceBreakRepository;
+    private final KafkaProducerService kafkaProducerService;
+
 
     public ProductService(ProductRepository productRepository,
-                          ProductPriceBreakRepository priceBreakRepository) {
-        this.productRepository = productRepository;
-        this.priceBreakRepository = priceBreakRepository;
-    }
+            ProductPriceBreakRepository priceBreakRepository,
+            KafkaProducerService kafkaProducerService) {
+		this.productRepository = productRepository;
+		this.priceBreakRepository = priceBreakRepository;
+		this.kafkaProducerService = kafkaProducerService;
+	}
+
 
     // PLP
 //    public List<ProductListDTO> getProductsByCategory(UUID categoryId) {
@@ -144,6 +150,30 @@ public class ProductService {
 
         System.out.println("Cache cleared for products");
     }
+    
+//    Product savedProduct = productRepository.save(product);
+//
+//    ProductCreatedEvent event =
+//            new ProductCreatedEvent(
+//                    savedProduct.getId(),
+//                    savedProduct.getName(),
+//                    savedProduct.getSlug()
+//            );
+//
+//    kafkaProducerService.sendProductCreatedEvent(event);
 
+    public void saveProduct(Product product) {
+    	Product savedProduct = productRepository.save(product);
+
+    	ProductCreatedEvent event =
+    	        new ProductCreatedEvent(
+    	                savedProduct.getId(),
+    	                savedProduct.getName(),
+    	                savedProduct.getSlug()
+    	        );
+
+    	kafkaProducerService.sendProductCreatedEvent(event);
+
+    }
 
 }
