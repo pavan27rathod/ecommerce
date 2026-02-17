@@ -43,6 +43,32 @@ public class CategoryService {
         return categoryRepository
                 .findByIsActiveTrueOrderByDisplayOrderAsc();
     }
+    
+    /**
+     * NEW METHOD — used for PLP "View All Products"
+     * Returns all subcategory IDs recursively
+     * DOES NOT affect existing APIs
+     */
+    public List<UUID> getAllSubcategoryIds(UUID parentId) {
+
+        List<Category> children =
+                categoryRepository
+                    .findByParentIdAndIsActiveTrueOrderByDisplayOrderAsc(parentId);
+
+        List<UUID> ids = children.stream()
+                .map(Category::getId)
+                .collect(Collectors.toList());
+
+        // recursive fetch
+        for (Category child : children) {
+
+            ids.addAll(getAllSubcategoryIds(child.getId()));
+
+        }
+
+        return ids;
+    }
+
 
     public boolean hasActiveChildren(UUID categoryId) {
         return !findActiveChildCategories(categoryId).isEmpty();

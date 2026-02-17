@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { browseCategories } from "@/services/category.service";
+import { getCategoryDetails }
+from "@/services/category.service";
+
 
 export const fetchBrowseCategories = createAsyncThunk(
   "category/fetchBrowseCategories",
@@ -14,11 +17,32 @@ export const fetchBrowseCategories = createAsyncThunk(
   }
 );
 
+export const fetchCategoryDetails = createAsyncThunk(
+  "category/fetchCategoryDetails",
+
+  async (slug, thunkAPI) => {
+
+    try {
+
+      return await getCategoryDetails(slug);
+
+    } catch (error) {
+
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Failed to fetch category"
+      );
+
+    }
+
+  }
+);
+
 const categorySlice = createSlice({
   name: "category",
 
   initialState: {
     browseCategories: [],
+    categoryDetails: null,
     loading: false,
     error: null,
   },
@@ -40,7 +64,29 @@ const categorySlice = createSlice({
       .addCase(fetchBrowseCategories.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+
+      .addCase(fetchCategoryDetails.pending, (state) => {
+
+        state.loading = true;
+        state.error = null;
+
+      })
+
+      .addCase(fetchCategoryDetails.fulfilled, (state, action) => {
+
+        state.loading = false;
+        state.categoryDetails = action.payload;
+
+      })
+
+      .addCase(fetchCategoryDetails.rejected, (state, action) => {
+
+        state.loading = false;
+        state.error = action.payload;
+
+      })
+
   },
 });
 

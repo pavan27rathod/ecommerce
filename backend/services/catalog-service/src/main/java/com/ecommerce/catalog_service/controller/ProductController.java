@@ -40,7 +40,16 @@ public class ProductController {
                 sortBy,
                 direction);
     }
+    
+    @GetMapping("/category/{categoryId}/all")
+    public Page<ProductListDTO> getProductsByCategoryAndSubcategories(
+            @PathVariable UUID categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "500") int size) {
 
+        return productService
+            .getProductsByCategoryAndSubcategories(categoryId, page, size);
+    }
     // Get product detail (PDP)
     @GetMapping("/{slug}")
     public ProductDetailDTO getProduct(
