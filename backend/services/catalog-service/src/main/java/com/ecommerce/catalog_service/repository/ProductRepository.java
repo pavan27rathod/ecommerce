@@ -31,6 +31,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 		            @Param("query") String query,
 		            Pageable pageable
 		    );
-
+    Page<Product> findByCategoryIdIn(
+    	    List<UUID> categoryIds,
+    	    Pageable pageable
+    	);
 
 }

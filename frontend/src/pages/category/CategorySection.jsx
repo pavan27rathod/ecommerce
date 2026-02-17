@@ -4,42 +4,38 @@ export default function CategorySection({ category }) {
 
   return (
 
-    <div className="border-b border-gray-300 py-5">
+    <div className="border-b border-gray-300 py-2">
 
-      <div className="flex items-start">
+      <div className="flex">
 
-        {/* LEFT IMAGE COLUMN */}
-        <div className="w-[80px] mr-4 flex-shrink-0">
+        {/* IMAGE COLUMN (keep as placeholder) */}
+        <div className="w-[72px] flex-shrink-0">
 
-          <img
-            src={`http://localhost:8080${category.imageUrl}`}
-            alt={category.name}
-            className="w-[60px] h-[60px] object-contain"
-          />
+          <div className="w-[60px] h-[60px] border border-gray-300 bg-white"></div>
 
         </div>
 
 
-        {/* RIGHT CONTENT COLUMN */}
-        <div className="flex-1 min-w-0">
+        {/* CONTENT COLUMN */}
+        <div className="flex-1">
 
-          {/* TITLE */}
-          <div className="flex items-center mb-2">
+          {/* TITLE ROW */}
+          <div className="flex items-center mb-1">
 
             <Link
-              to={`/category/${category.id}`}
-              className="text-[16px] font-semibold text-gray-900 hover:text-blue-600"
+              to={`/category/${category.slug}`}
+              className="text-[15px] font-semibold text-[#333] hover:text-blue-600"
             >
               {category.name}
             </Link>
 
-            <span className="text-gray-500 text-sm ml-2">
+            <span className="text-gray-500 text-[13px] ml-1">
               ({category.productCount})
             </span>
 
             <Link
-              to={`/category/${category.id}`}
-              className="text-blue-600 text-sm ml-3 hover:underline"
+              to={`/category/${category.slug}`}
+              className="text-blue-600 text-[13px] ml-3 hover:underline"
             >
               View all
             </Link>
@@ -47,15 +43,15 @@ export default function CategorySection({ category }) {
           </div>
 
 
-          {/* SUBCATEGORY GRID */}
-          <div className="grid grid-cols-3 gap-x-24 gap-y-1">
+          {/* SUBCATEGORY GRID — EXACT ELEMENT14 STYLE */}
+          <div className="grid grid-cols-3 gap-x-32 gap-y-1">
 
-            {category.children?.map((child) => (
+            {category.subCategories?.map((child) => (
 
               <Link
                 key={child.id}
-                to={`/category/${child.id}`}
-                className="text-blue-600 text-[14px] hover:underline block"
+                to={`/category/${child.slug}`}
+                className="text-blue-600 text-[13px] hover:underline whitespace-nowrap"
               >
                 {child.name}
 
@@ -76,4 +72,5 @@ export default function CategorySection({ category }) {
     </div>
 
   );
+
 }

@@ -7,3 +7,12 @@ export const browseCategories = async () => {
   return response.data;
 
 };
+
+export const getCategoryDetails = async (slug) => {
+
+  const response =
+    await httpClient.get(`/api/categories/${slug}`);
+
+  return response.data;
+
+};

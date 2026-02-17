@@ -30,14 +30,17 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductPriceBreakRepository priceBreakRepository;
     private final KafkaProducerService kafkaProducerService;
+    private final CategoryService categoryService;
 
 
     public ProductService(ProductRepository productRepository,
             ProductPriceBreakRepository priceBreakRepository,
-            KafkaProducerService kafkaProducerService) {
+            KafkaProducerService kafkaProducerService,
+            CategoryService categoryService) {
 		this.productRepository = productRepository;
 		this.priceBreakRepository = priceBreakRepository;
 		this.kafkaProducerService = kafkaProducerService;
+		this.categoryService = categoryService;
 	}
 
 
@@ -105,6 +108,27 @@ public class ProductService {
 
         return products.map(product -> new ProductListDTO(product));
     }
+    
+    @Cacheable(
+    	    value = "category_products_all",
+    	    key = "#categoryId + '_' + #page + '_' + #size"
+    	)
+    	public Page<ProductListDTO> getProductsByCategoryAndSubcategories(
+    	        UUID categoryId,
+    	        int page,
+    	        int size) {
+
+    	    Pageable pageable = PageRequest.of(page, size);
+
+    	    List<UUID> categoryIds =
+    	        categoryService.getAllSubcategoryIds(categoryId);
+
+    	    categoryIds.add(categoryId);
+
+    	    return productRepository
+    	        .findByCategoryIdIn(categoryIds, pageable)
+    	        .map(product -> mapToListDTO(product));
+    	}
 
 
     private ProductDetailDTO mapToDetailDTO(Product product,
